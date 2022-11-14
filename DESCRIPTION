@@ -1,0 +1,24 @@
+Package: fGMD
+Title: A modified version of gglasso, repurposed exclusively for the MFSGrp package
+Version: 1.0.0
+Date: 2021-03-22
+Authors@R: c(
+  person("Ali", "Mahzarnia", email = "amahzarn@uncc.edu",
+  role = c("aut", "cre"), comment = "https://math.uncc.edu/directory/ali-mahzarnia"),
+  person("Jun", "Song", email = "jsong19@uncc.edu",
+  role = c("aut"), comment = "http://www.jsong.net/")
+  )
+Maintainer: Ali Mahzarnia <amahzarn@uncc.edu>
+Description: This package is built exclusively for the MFSGrp package. This package is a heavily modified version of the gglasso package that was initiated by Yang, Y. and Zou, H. (2015). The features added to the original gglasso package are: the mixing parameter (alpha) and its net search cross-validation, the curvature penalization for functional regression and its net search cross-validation, the optimized Fortran core function to accelerate the curvature penalization updates, and the progress reports with time estimations. This package does not work independently from the MFSGrp package, and it does not interfere with the functions of the gglasso package due to the slight name differences.
+License: GPL-2
+Imports: methods
+URL: https://github.com/Ali-Mahzarnia/fGMD
+Repository: CRAN
+RoxygenNote: 7.0.2
+Suggests: testthat, knitr, rmarkdown
+Encoding: UTF-8
+LazyData: TRUE
+VignetteBuilder: knitr
+NeedsCompilation: yes
+Author: Ali Mahzarnia [aut, cre] (https://math.uncc.edu/directory/ali-mahzarnia),
+  Jun Song [aut] (http://www.jsong.net/)

@@ -1,0 +1,15 @@
+94d55d512a9ba36caa9b7df079bae19f *COPYING
+1c671c24931f6f84c9e1759cde1b41db *DESCRIPTION
+a4776d65098635744c309743365f91c5 *NAMESPACE
+a1becab0195024389541d079323c4c8e *R/auxiliary.R
+05fc57d00caf2dffcbf9bea68f034120 *R/cv.R
+63c359c59ab7c5ecd0bcb29c7aa85fff *R/fGMD.R
+a1c2e1c200e39f4dd7a6eb268c47faf5 *R/imports.R
+1a3340b2b2e00d8d722f1a248d896398 *R/loss.R
+a04c907c6eb41377fa4dcaf6f15f3992 *R/model.R
+f6103415e9742cba4c9ab0f9c89c35f7 *R/plot.cv.gglasso.R
+06c303cf3619b8a85cfdbe75b91ccc01 *R/plot.gglasso.R
+51e324b5edb9ca3f57739845fe189ef1 *R/tools.R
+766464b5ba3faf1a217793b30d5873cc *R/utilities.R
+b8892a545c7c4d43546d5fc825cbe21a *src/lsmod_f.f90
+986de8042cfb47c473e084b6d4de4362 *src/registerDynamicSymbol.c
