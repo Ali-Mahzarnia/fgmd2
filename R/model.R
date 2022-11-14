@@ -33,18 +33,25 @@ lsmod <- function(bn, bs, ix, iy, nobs, nvars, x, y, pf, dfmax,
     outlist
 }
 
-logit <- function(bn, bs, ix, iy, nobs, nvars, x, y, pf, 
-    dfmax, pmax, nlam, flmin, ulam, eps, maxit, vnames, group, intr) {
+logit <- function(bn, bs, ix, iy, nobs, nvars, x, y, pf, dfmax, 
+    pmax, nlam, flmin, ulam, eps, maxit, vnames, group, intr, alpha, GGder, lambdader) {
     #################################################################################
     # call Fortran core
     gamma <- rep(NA, bn)
-    for (g in 1:bn) gamma[g] <- max(eigen(crossprod(x[, ix[g]:iy[g]]))$values)
-    gamma <- 0.25 * gamma/nobs
+    for (g in 1:bn)gamma[g] <-MFSGrp::maxeigencpp(crossprod(x[, ix[g]:iy[g]])) 
+    gamma <- gamma/nobs
     gamma <- as.double(gamma)
+	
+    if (lambdader==0) {gamu=gamma} else {
+    gamu <- rep(NA, bn)
+    for (g in 1:bn)gamu[g] <-MFSGrp::maxeigencpp(crossprod(x[, ix[g]:iy[g]])+lambdader*GGder[ix[g]:iy[g],ix[g]:iy[g]] ) 
+    gamu <- gamu/nobs
+    gamu <- as.double(gamu) }	
+	
     fit <- .Fortran("log_f", bn, bs, ix, iy, gamma, nobs, nvars, as.double(x), 
         as.double(y), pf, dfmax, pmax, nlam, flmin, ulam, eps, maxit, intr, nalam = integer(1), 
         b0 = double(nlam), beta = double(nvars * nlam), idx = integer(pmax), 
-        nbeta = integer(nlam), alam = double(nlam), npass = integer(1), jerr = integer(1))
+        nbeta = integer(nlam), alam = double(nlam), npass = integer(1), jerr = integer(1), alpha=alpha, lambdader=lambdader, GGder=GGder, gamu=gamu)
     #################################################################################
     # output
     outlist <- getoutput(fit, maxit, pmax, nvars, vnames)
