@@ -21,7 +21,7 @@ lsmod <- function(bn, bs, ix, iy, nobs, nvars, x, y, pf, dfmax,
     #print(GGder[1:5,1:5])
     #GGder=diag(nvars)
     
-    fit <- .Fortran("lsmod_f", bn, bs, ix, iy, gamma, nobs, nvars, as.double(x), 
+    fit <- .Fortran("log_f", bn, bs, ix, iy, gamma, nobs, nvars, as.double(x), 
         as.double(y), pf, dfmax, pmax, nlam, flmin, ulam, eps, maxit, intr, nalam = integer(1), 
         b0 = double(nlam), beta = double(nvars * nlam), idx = integer(pmax), 
         nbeta = integer(nlam), alam = double(nlam), npass = integer(1), jerr = integer(1), alpha=alpha, lambdader=lambdader, GGder=GGder, gamu=gamu)
@@ -29,7 +29,7 @@ lsmod <- function(bn, bs, ix, iy, nobs, nvars, x, y, pf, dfmax,
     # output
     outlist <- getoutput(fit, maxit, pmax, nvars, vnames)
     outlist <- c(outlist, list(npasses = fit$npass, jerr = fit$jerr, group = group))
-    class(outlist) <- c("ls")
+    class(outlist) <- c("logit")
     outlist
 }
 
