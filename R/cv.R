@@ -79,7 +79,7 @@ cv.fGMD <- function(x, y, group,alpha, GGder, lambdader ,lambda = NULL, pred.los
             #print(outlister[[i]])
         }
   
-        cvstuffer= cv.ls(outlister, lam, x, y, foldider, pred.loss, delta) 
+        cvstuffer= cv.logit(outlister, lam, x, y, foldider, pred.loss, delta) 
         cvmer <- cvstuffer$cvm
         #print(min(cvstuffer$cvm))
         #cat(j, "\n")
@@ -131,7 +131,7 @@ cat("\r        Chosen lambdader is", lambdader, "and Maximum Estimated Time:",  
             #print(outlister[[i]])
         }
         
-        cvstuffer= cv.ls(outlister, lam, x, y, foldider, pred.loss, delta) 
+        cvstuffer= cv.logit(outlister, lam, x, y, foldider, pred.loss, delta) 
         cvmer <- cvstuffer$cvm
         #print(min(cvstuffer$cvm))
         #cat(j, "\n")
