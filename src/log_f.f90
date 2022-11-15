@@ -1,3 +1,4 @@
+
 ! --------------------------------------------------------------------------
 ! gglasso.f90: the BMD algorithm for group-lasso penalized learning.
 ! --------------------------------------------------------------------------
@@ -85,7 +86,7 @@
 
 ! --------------------------------------------------
 SUBROUTINE log_f (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,ulam,&
-                    eps,maxit,intr,nalam,b0,beta,idx,nbeta,alam,npass,jerr)
+                    eps,maxit,intr,nalam,b0,beta,idx,nbeta,alam,npass,jerr, alpha, lambdader, GGder, gamu)
 ! --------------------------------------------------
     IMPLICIT NONE
     ! - - - arg types - - -
@@ -111,11 +112,15 @@ SUBROUTINE log_f (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,ulam,&
     INTEGER::nbeta(nlam)
     DOUBLE PRECISION:: flmin
     DOUBLE PRECISION::eps
+    DOUBLE PRECISION::alpha
+    DOUBLE PRECISION::lambdader
     DOUBLE PRECISION:: x(nobs,nvars)
+    DOUBLE PRECISION:: GGder(nvars,nvars)
     DOUBLE PRECISION::y(nobs)
     DOUBLE PRECISION::pf(bn)
     DOUBLE PRECISION::ulam(nlam)
     DOUBLE PRECISION::gam(bn)
+    DOUBLE PRECISION::gamu(bn)
     DOUBLE PRECISION:: b0(nlam)
     DOUBLE PRECISION::beta(nvars,nlam)
     DOUBLE PRECISION::alam(nlam)
@@ -178,12 +183,16 @@ SUBROUTINE log_f (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,ulam,&
         alf=flmin**(1.0D0/(nlam-1.0D0))
     ENDIF
     vl = matmul(y/(1.0D0+exp(r)), x) / nobs
+    IF(lambdader>0.0D0) THEN
+    !vl = vl-lambdader*matmul(GGder,b)/nobs
+    ENDIF
     DO g = 1,bn
             ALLOCATE(u(bs(g)))
             u = vl(ix(g):iy(g))
             ga(g) = sqrt(dot_product(u,u))
             DEALLOCATE(u)
     END DO
+    write(*,'(i4,a1)', advance = 'no') l ,achar(13)  
     DO l=1, nlam
         al0 = al
         IF(flmin>=1.0D0) THEN
@@ -192,21 +201,21 @@ SUBROUTINE log_f (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,ulam,&
             IF(l > 2) THEN
                 al=al*alf
             ELSE IF(l==1) THEN
-                al=big
+                al=big/(1+0.1-alpha)
             ELSE IF(l==2) THEN
                 al0 = 0.0D0
                 DO g = 1,bn
-                    IF(pf(g)>0.0D0) THEN
-                        al0 = max(al0, ga(g) / pf(g))
+                    IF(1>0.0D0) THEN
+                        al0 = max(al0, ga(g) )
                     ENDIF
                 END DO
                 al = al0 * alf
             ENDIF
         ENDIF
-        tlam = (2.0*al-al0)
+        tlam =(2.0*al-al0)*(1-alpha)
         DO g = 1, bn
             IF(jxx(g) == 1) CYCLE
-            IF(ga(g) > pf(g) * tlam) jxx(g) = 1
+            IF(ga(g) > tlam) jxx(g) = 1
         ENDDO
 ! --------- outer loop ----------------------------
         DO
@@ -230,11 +239,14 @@ SUBROUTINE log_f (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,ulam,&
                     ALLOCATE(oldb(bs(g)))
                     oldb=b(start:end)
                     u=matmul(y/(1.0D0+exp(r)),x(:,start:end))/nobs
-                    u=gam(g)*b(start:end)+u
+                    u=gamu(g)*b(start:end)+u
+                    IF(lambdader>0.0D0) THEN
+                    u=u-lambdader*matmul(GGder(start:end,start:end),oldb)/nobs
+                    ENDIF
                     unorm=sqrt(dot_product(u,u))
-                    t=unorm-pf(g)*al
+                    t=unorm-al*(1-alpha)
                     IF(t>0.0D0) THEN
-                        b(start:end)=u*t/(gam(g)*unorm)
+                        b(start:end)=u*t/((gamu(g)+2.0*al*alpha)*unorm)
                     ELSE
                         b(start:end)=0.0D0
                     ENDIF
@@ -279,11 +291,14 @@ SUBROUTINE log_f (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,ulam,&
                         ALLOCATE(oldb(bs(g)))
                         oldb=b(start:end)
                         u=matmul(y/(1.0D0+exp(r)),x(:,start:end))/nobs
-                        u=gam(g)*b(start:end)+u
+                        u=gamu(g)*b(start:end)+u
+                        IF(lambdader>0.0D0) THEN
+                        u=u-lambdader*matmul(GGder(start:end,start:end),oldb)/nobs
+                        ENDIF
                         unorm=sqrt(dot_product(u,u))
-                        t=unorm-pf(g)*al
+                        t=unorm-al*(1-alpha)
                         IF(t>0.0D0) THEN
-                            b(start:end)=u*t/(gam(g)*unorm)
+                            b(start:end)=u*t/((gamu(g)+2.0*al*alpha)*unorm)
                         ELSE
                             b(start:end)=0.0D0
                         ENDIF
@@ -316,13 +331,16 @@ SUBROUTINE log_f (bn,bs,ix,iy,gam,nobs,nvars,x,y,pf,dfmax,pmax,nlam,flmin,ulam,&
             max_gam = maxval(gam)
             IF(any((max_gam*(b-oldbeta)/(1+abs(b)))**2 >= eps)) jx = 1
             IF (jx /= 0) CYCLE
-            vl = matmul(y/(1.0D0+exp(r)), x) / nobs
+            vl = matmul(r, x)/nobs
+                IF(lambdader>0.0D0) THEN
+                !vl = vl-lambdader*matmul(GGder,b)/nobs
+                ENDIF
             DO g = 1, bn
                 IF(jxx(g) == 1) CYCLE
                 ALLOCATE(u(bs(g)))
                 u = vl(ix(g):iy(g))
                 ga(g) = sqrt(dot_product(u,u))
-                IF(ga(g) > al*pf(g))THEN
+                IF(ga(g) > al*(1-alpha))THEN
                     jxx(g) = 1
                     jx = 1
                 ENDIF
