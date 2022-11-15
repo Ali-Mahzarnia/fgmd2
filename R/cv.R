@@ -2,7 +2,7 @@
 #' @export
 cv.fGMD <- function(x, y, group,alpha, GGder, lambdader ,lambda = NULL, pred.loss = c("misclass", 
     "loss", "L1", "L2"), nfolds = 5, foldid, delta, lambda.factor,
-    nlambda,nfolder,nalpha,nlamder,lamdermin, lamdermax,alphamin, alphamax,  ...) {
+    nlambda,nfolder,nalpha,nlamder,lamdermin, lamdermax,alphamin, alphamax, loss=loss, ...) {
        if (missing(pred.loss)) 
         pred.loss <- "default" else pred.loss <- match.arg(pred.loss)
     N <- nrow(x)
